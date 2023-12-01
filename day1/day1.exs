@@ -1001,10 +1001,10 @@ qbfvpnxsix3four1lfone
 
 lines = String.split(input)
 
-result = Enum.map(lines, fn line ->
+result = Enum.reduce(lines, 0, fn line, sum ->
   [_, first] = Regex.run(~r/^.*?(\d).*$/, line)
   [_, last] = Regex.run(~r/^.*(\d).*?$/, line)
-  String.to_integer(first <> last)
+  sum + String.to_integer(first <> last)
 end)
 
-IO.puts(Enum.sum(result))
+IO.puts(result)
