@@ -62,13 +62,12 @@ private fun part1() {
 }
 
 data class Point(val x: Int, val y: Int)
-data class Gear(val firstNumber: Int, var secondNumber: Int = 0)
 
 fun part2() {
     var lastCharWasPartOfNumber = false
     var currentNumber = 0
     var gearAdjacentToCurentNumber: Point? = null
-    val gears = mutableMapOf<Point, Gear>()
+    val gearNumbersByPoints = mutableMapOf<Point, MutableList<Int>>()
 
     val input2d = input.lines().map { it.toCharArray() }
 
@@ -87,11 +86,9 @@ fun part2() {
     fun handleEndOfNumber() {
         gearAdjacentToCurentNumber?.also {
             println("$currentNumber is adjacent to gear at (${it.x}, ${it.y})")
-            val existingGearOrNull = gears[it]
-            if (existingGearOrNull == null) {
-                gears[it] = Gear(currentNumber)
-            } else {
-                existingGearOrNull.secondNumber = currentNumber
+
+            gearNumbersByPoints.compute(it) { _, previousNumbersOrNull ->
+                (previousNumbersOrNull ?: mutableListOf()).apply { add(currentNumber) }
             }
         }
         lastCharWasPartOfNumber = false
@@ -120,8 +117,9 @@ fun part2() {
         handleEndOfNumber()
     }
 
+    val sum = gearNumbersByPoints.values.filter { it.size == 2 }.sumOf { it.reduce(Int::times) }
 
-    println("Part 2: ${gears.values.sumOf { it.firstNumber * it.secondNumber }} ($gears)")
+    println("Part 2: $sum ($gearNumbersByPoints)")
 }
 
 val input = """
