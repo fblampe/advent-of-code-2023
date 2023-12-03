@@ -1,5 +1,6 @@
 fun main() {
     part1()
+    part2()
 }
 
 private fun Char.isSymbol() = !isDigit() && this != '.'
@@ -58,6 +59,69 @@ private fun part1() {
     }
 
     println("Part 1: $sum parts, numbered $parts")
+}
+
+data class Point(val x: Int, val y: Int)
+data class Gear(val firstNumber: Int, var secondNumber: Int = 0)
+
+fun part2() {
+    var lastCharWasPartOfNumber = false
+    var currentNumber = 0
+    var gearAdjacentToCurentNumber: Point? = null
+    val gears = mutableMapOf<Point, Gear>()
+
+    val input2d = input.lines().map { it.toCharArray() }
+
+    fun checkForNearbyGear(i: Int, j: Int): Point? {
+        for (xOffset in -1..1) {
+            for (yOffset in -1..1) {
+                val charOrNull = input2d.getOrNull(i + xOffset)?.getOrNull(j + yOffset)
+                if (charOrNull == '*') {
+                    return Point(i + xOffset, j + yOffset)
+                }
+            }
+        }
+        return null
+    }
+
+    fun handleEndOfNumber() {
+        gearAdjacentToCurentNumber?.also {
+            println("$currentNumber is adjacent to gear at (${it.x}, ${it.y})")
+            val existingGearOrNull = gears[it]
+            if (existingGearOrNull == null) {
+                gears[it] = Gear(currentNumber)
+            } else {
+                existingGearOrNull.secondNumber = currentNumber
+            }
+        }
+        lastCharWasPartOfNumber = false
+        gearAdjacentToCurentNumber = null
+        currentNumber = 0
+    }
+
+    for (i in input2d.indices) {
+        for (j in input2d[i].indices) {
+            val currentChar = input2d[i][j]
+
+            if (lastCharWasPartOfNumber && !currentChar.isDigit()) {
+                handleEndOfNumber()
+            }
+            if (currentChar.isDigit()) {
+                // number continues or starts
+                if (gearAdjacentToCurentNumber == null) {
+                    gearAdjacentToCurentNumber = checkForNearbyGear(i, j)
+                }
+
+                lastCharWasPartOfNumber = true
+                currentNumber = currentNumber * 10 + currentChar.digitToInt()
+            }
+        }
+        // end of line
+        handleEndOfNumber()
+    }
+
+
+    println("Part 2: ${gears.values.sumOf { it.firstNumber * it.secondNumber }} ($gears)")
 }
 
 val input = """
